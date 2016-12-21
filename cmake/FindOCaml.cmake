@@ -26,52 +26,63 @@ if(CMAKE_OCaml_EXECUTABLE)
   get_filename_component(OCaml_ROOT_DIR ${OCaml_ROOT_DIR}         PATH)
 endif()
 
+if(NOT CMAKE_OCaml_FIND)
 find_program(CMAKE_OCaml_FIND ocamlfind
   HINTS         ${OCaml_ROOT_DIR}
   PATH_SUFFIXES bin
   )
-  
-if (WIN32)
-	find_program (CMAKE_Flexlink_EXECUTABLE flexlink)
-endif(WIN32)
+endif()
 
-if(CMAKE_OCaml_EXECUTABLE AND NOT CMAKE_OCaml_FIND)
-  
+if(NOT CMAKE_OCaml_COMPILER)
   find_program(CMAKE_OCaml_COMPILER ocamlc.opt ocamlc
     HINTS         ${OCaml_ROOT_DIR}
     PATH_SUFFIXES bin
     )
+endif()
   
+if(NOT CMAKE_OCaml_OPT_COMPILER)
   find_program(CMAKE_OCaml_OPT_COMPILER ocamlopt.opt ocamlopt
     HINTS         ${OCaml_ROOT_DIR}
     PATH_SUFFIXES bin
     )
+endif()
   
+if(NOT CMAKE_OCaml_DEP_COMPILER)
   find_program(CMAKE_OCaml_DEP ocamldep.opt ocamldep
     HINTS         ${OCaml_ROOT_DIR}
     PATH_SUFFIXES bin
     )
+endif()
+
+if(NOT CMAKE_OCaml_LEX)
+  find_program(CMAKE_OCaml_LEX ocamllex.opt ocamllex
+    HINTS         ${OCaml_ROOT_DIR}
+    PATH_SUFFIXES bin
+    )
+endif()
+
+if(NOT CMAKE_OCaml_YACC)
+  find_program(CMAKE_OCaml_YACC ocamlyacc
+    HINTS         ${OCaml_ROOT_DIR}
+    PATH_SUFFIXES bin
+    )
+endif()
   
-  if(CMAKE_OCaml_COMPILER)
-    set(TMP_VERSION_CMD ${CMAKE_OCaml_COMPILER})
+if (WIN32)
+  if(NOT CMAKE_Flexlink_EXECUTABLE)
+    find_program (CMAKE_Flexlink_EXECUTABLE flexlink)
   endif()
-  
-else()
+endif(WIN32)
+
+if(CMAKE_OCaml_COMPILER)
+  set(TMP_VERSION_CMD ${CMAKE_OCaml_COMPILER})
+elseif(CMAKE_OCaml_OPT_COMPILER)
+  set(TMP_VERSION_CMD ${CMAKE_OCaml_OPT_COMPILER})
+elseif(CMAKE_OCaml_FIND)
   set(TMP_VERSION_CMD ${CMAKE_OCaml_FIND} ocamlc)
 endif()
 
-find_program(CMAKE_OCaml_LEX ocamllex.opt ocamllex
-  HINTS         ${OCaml_ROOT_DIR}
-  PATH_SUFFIXES bin
-  )
-
-find_program(CMAKE_OCaml_YACC ocamlyacc
-  HINTS         ${OCaml_ROOT_DIR}
-  PATH_SUFFIXES bin
-  )
-
 if(TMP_VERSION_CMD)
-  
   execute_process(
     COMMAND         ${TMP_VERSION_CMD} -version
     OUTPUT_VARIABLE CMAKE_OCaml_VERSION
@@ -83,20 +94,30 @@ if(TMP_VERSION_CMD)
    OUTPUT_VARIABLE CMAKE_OCaml_STD_LIBRARY_PATH
    OUTPUT_STRIP_TRAILING_WHITESPACE
    )
-  
 endif()
 
 include (FindPackageHandleStandardArgs)
 
-if(CMAKE_OCaml_EXECUTABLE AND NOT CMAKE_OCaml_FIND)
-  
-  find_package_handle_standard_args(OCaml "Could NOT find OCaml. Please specify CMAKE_OCaml_EXECUTABLE."
-    CMAKE_OCaml_VERSION
-    CMAKE_OCaml_EXECUTABLE
+find_package_handle_standard_args(OCaml "Could NOT find OCaml. Please specify CMAKE_OCaml_EXECUTABLE."
+  CMAKE_OCaml_VERSION
+  CMAKE_OCaml_STD_LIBRARY_PATH
+  CMAKE_OCaml_EXECUTABLE
+  CMAKE_OCaml_LEX
+  CMAKE_OCaml_YACC
+  )
+
+mark_as_advanced(
+  CMAKE_OCaml_VERSION
+  CMAKE_OCaml_STD_LIBRARY_PATH
+  CMAKE_OCaml_EXECUTABLE
+  CMAKE_OCaml_LEX
+  CMAKE_OCaml_YACC
+  )
+
+if(CMAKE_OCaml_COMPILER OR CMAKE_OCaml_OPT_COMPILER)
+  find_package_handle_standard_args(OCamlCompiler "Could NOT find OCamlCompiler. Please specify CMAKE_OCaml_COMPILER."
     CMAKE_OCaml_COMPILER
     CMAKE_OCaml_OPT_COMPILER
-    CMAKE_OCaml_LEX
-    CMAKE_OCaml_YACC
     CMAKE_OCaml_DEP
     )
   
@@ -105,23 +126,17 @@ if(CMAKE_OCaml_EXECUTABLE AND NOT CMAKE_OCaml_FIND)
     CMAKE_OCaml_OPT_COMPILER
     CMAKE_OCaml_DEP
     )
-  
-else()
-  
-  find_package_handle_standard_args(OCaml "Could NOT find OCaml. Please specify CMAKE_OCaml_EXECUTABLE."
-    CMAKE_OCaml_VERSION
-    CMAKE_OCaml_EXECUTABLE
-    CMAKE_OCaml_FIND
-    CMAKE_OCaml_LEX
-    CMAKE_OCaml_YACC
-    )
-  
-  mark_as_advanced(CMAKE_OCaml_FIND)
-  
-endif()
+  if(CMAKE_OCaml_FIND)
+    find_package_handle_standard_args(OCamlFind "Could NOT find OCamlFind. Please specify CMAKE_OCaml_FIND."
+      CMAKE_OCaml_FIND
+      )
 
-mark_as_advanced(
-  CMAKE_OCaml_EXECUTABLE
-  CMAKE_OCaml_LEX
-  CMAKE_OCaml_YACC
-  )
+    mark_as_advanced(CMAKE_OCaml_FIND)
+  endif()
+else()
+  find_package_handle_standard_args(OCamlFind "Could NOT find OCamlFind. Please specify CMAKE_OCaml_FIND."
+    CMAKE_OCaml_FIND
+    )
+
+  mark_as_advanced(CMAKE_OCaml_FIND)
+endif()
