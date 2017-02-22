@@ -47,7 +47,7 @@ if(NOT CMAKE_OCaml_OPT_COMPILER)
     )
 endif()
   
-if(NOT CMAKE_OCaml_DEP_COMPILER)
+if(NOT CMAKE_OCaml_DEP)
   find_program(CMAKE_OCaml_DEP ocamldep.opt ocamldep
     HINTS         ${OCaml_ROOT_DIR}
     PATH_SUFFIXES bin
