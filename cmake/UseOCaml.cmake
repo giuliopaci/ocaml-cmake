@@ -106,7 +106,7 @@ endif (CMAKE_BUILD_TYPE)
 option (CMAKE_OCaml_NATIVE "Compile OCaml targets with native compiler")
 option (CMAKE_OCaml_USE_OCAML_TRACE "Run the script UseOCaml.cmake in trace mode")
 
-set(MSGQ "Command used to find OCaml librairies")
+set(MSGQ "Command used to find OCaml libraries")
 if(CMAKE_OCaml_FIND)
   set(CMAKE_OCaml_CMD_QUERY ${CMAKE_OCaml_FIND} query CACHE STRING ${MSGQ})
 endif()
