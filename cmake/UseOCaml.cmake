@@ -413,13 +413,6 @@ macro (ocaml_add_object_target target source hasintf objectname)
   endforeach()
 
   add_custom_command (OUTPUT ${output}
-    COMMAND ${CMAKE_COMMAND}
-      -D ocamldep=${CMAKE_OCaml_DEP}
-      -D ocamlfind=${CMAKE_OCaml_FIND}
-      -D filename=${source}
-      -D output=${OCAML_${target}_OUTPUT_DIR}
-      -P ${CMAKE_OCAML_DEP_FILE}
-
     COMMAND ${compiler}
       ${CMAKE_OCaml_FLAGS} ${CMAKE_OCaml_FLAGS_${CMAKE_BUILD_TYPE_UPPER}}
       ${include_flags} ${package_flags}
@@ -466,13 +459,6 @@ macro (ocaml_add_interface_object_target target source)
   endforeach()
 
   add_custom_command (OUTPUT ${output}
-    COMMAND ${CMAKE_COMMAND}
-      -D ocamldep=${CMAKE_OCaml_DEP}
-      -D ocamlfind=${CMAKE_OCaml_FIND}
-      -D filename=${source}
-      -D output=${OCAML_${target}_OUTPUT_DIR}
-      -P ${CMAKE_OCAML_DEP_FILE}
-
     COMMAND ${CMAKE_OCaml_CMD_COMPILER}
       ${CMAKE_OCaml_FLAGS} ${CMAKE_OCaml_FLAGS_${CMAKE_BUILD_TYPE_UPPER}}
       ${include_flags} ${package_flags}
