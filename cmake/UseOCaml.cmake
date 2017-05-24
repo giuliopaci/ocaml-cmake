@@ -365,6 +365,62 @@ function (get_ocaml_dependencies target filename impl hasintf dep)
 
 endfunction (get_ocaml_dependencies)
 
+# ocaml_add_c_object_target (target native source objectname)
+#   Compiles the Caml source ${source} to native or bytecode object.
+#   The name of the object is written in the variable ${objectname}.
+macro (ocaml_add_c_object_target target source objectname)
+
+  get_filename_component (source_name_we ${source} NAME_WE)
+  get_filename_component (source_name    ${source} NAME)
+  get_filename_component (source_path    ${source} PATH)
+
+  set (object_ext    o)
+  set (${objectname} ${OCAML_${target}_OUTPUT_DIR}/${source_name_we}.${object_ext})
+  set (output        ${${objectname}})
+  if (OCAML_${target}_NATIVE)
+    set (libext ".cmxa")
+    set (compiler      ${CMAKE_OCaml_CMD_OPT_COMPILER})
+  else (OCAML_${target}_NATIVE)
+    set (libext ".cma")
+    set (compiler      ${CMAKE_OCaml_CMD_COMPILER})
+    set (${objectname} ${OCAML_${target}_OUTPUT_DIR}/${source_name_we}.${object_ext})
+    set (output        ${${objectname}})
+  endif (OCAML_${target}_NATIVE)
+
+  set (include_flags)
+  foreach (include ${OCAML_${target}_INCLUDE_DIRECTORIES})
+    list (APPEND include_flags -I ${include})
+  endforeach (include)
+
+  set(package_flags)
+  if(CMAKE_OCaml_STD_LIBRARY_PATH)
+    list(APPEND package_flags -I "${CMAKE_OCaml_STD_LIBRARY_PATH}")
+  endif()
+  foreach(pkg ${OCAML_${target}_TRANSPKGS})
+    if(CMAKE_OCaml_FIND)
+      list(APPEND package_flags ${pkg}${libext})
+      #list(APPEND package_flags -package ${pkg})
+    else()
+      list(APPEND package_flags ${pkg}${libext})
+    endif()
+  endforeach()
+
+  add_custom_command (OUTPUT ${output}
+    COMMAND ${compiler}
+      ${CMAKE_OCaml_FLAGS} ${CMAKE_OCaml_FLAGS_${CMAKE_BUILD_TYPE_UPPER}}
+      ${include_flags} ${package_flags}
+      -ccopt "-o ${${objectname}}" -c ${source}
+
+    MAIN_DEPENDENCY   ${source}
+    DEPENDS           ${depends}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT           "Building OCaml object ${source_name_we}.${object_ext}"
+    )
+
+  add_custom_target (${target}.${source_name_we}.${object_ext} DEPENDS ${output})
+
+endmacro (ocaml_add_c_object_target)
+
 # ocaml_add_object_target (target native source hasintf objectname)
 #   Compiles the Caml source ${source} to native or bytecode object.
 #   The name of the object is written in the variable ${objectname}.
@@ -412,17 +468,34 @@ macro (ocaml_add_object_target target source hasintf objectname)
     endif()
   endforeach()
 
-  add_custom_command (OUTPUT ${output}
-    COMMAND ${compiler}
+  if(${OCAML_${target}_KIND} STREQUAL "C_OBJECT")
+    set (object_ext    o)
+    set (${objectname} ${OCAML_${target}_OUTPUT_DIR}/${source_name_we}.${object_ext})
+    set (output        ${${objectname}})
+    add_custom_command (OUTPUT ${output}
+      COMMAND ${compiler}
+      ${CMAKE_OCaml_FLAGS} ${CMAKE_OCaml_FLAGS_${CMAKE_BUILD_TYPE_UPPER}}
+      ${include_flags} ${package_flags}
+      -o ${${objectname}} -output-obj ${source}
+      
+      MAIN_DEPENDENCY   ${source}
+      DEPENDS           ${depends}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+      COMMENT           "Building OCaml object ${source_name_we}.${object_ext}"
+      )
+  else(${OCAML_${target}_KIND} STREQUAL "C_OBJECT")
+    add_custom_command (OUTPUT ${output}
+      COMMAND ${compiler}
       ${CMAKE_OCaml_FLAGS} ${CMAKE_OCaml_FLAGS_${CMAKE_BUILD_TYPE_UPPER}}
       ${include_flags} ${package_flags}
       -o ${${objectname}} -c -impl ${source}
 
-    MAIN_DEPENDENCY   ${source}
-    DEPENDS           ${depends}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMENT           "Building OCaml object ${source_name_we}.${object_ext}"
-    )
+      MAIN_DEPENDENCY   ${source}
+      DEPENDS           ${depends}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+      COMMENT           "Building OCaml object ${source_name_we}.${object_ext}"
+      )
+  endif(${OCAML_${target}_KIND} STREQUAL "C_OBJECT")
 
   add_custom_target (${target}.${source_name_we}.${object_ext} DEPENDS ${output})
 
@@ -563,9 +636,10 @@ macro (add_ocaml_objects target)
 
   foreach (source ${OCAML_${target}_SOURCES})
     get_source_file_property (impl ${source} OCAML_IMPL)
+    get_source_file_property (ocamlc ${source} OCAML_C)
+    get_filename_component (path    ${source} PATH)
+    get_filename_component (name_we ${source} NAME_WE)
     if (impl)
-      get_filename_component (path    ${source} PATH)
-      get_filename_component (name_we ${source} NAME_WE)
       set (hasintf FALSE)
       if (EXISTS "${path}/${name_we}.mli")
         set (hasintf TRUE)
@@ -573,7 +647,12 @@ macro (add_ocaml_objects target)
       ocaml_add_object_target (${target} ${source} ${hasintf} object)
       list (APPEND OCAML_${target}_OBJECTS ${object})
     else (impl)
-      ocaml_add_interface_object_target (${target} ${source})
+      if (ocamlc)
+        ocaml_add_c_object_target (${target} ${source} object)
+        list (APPEND OCAML_${target}_OBJECTS ${object})
+      else (ocamlc)
+        ocaml_add_interface_object_target (${target} ${source})
+      endif (ocamlc)
     endif (impl)
   endforeach (source)
 
@@ -735,7 +814,7 @@ macro (target_link_ocaml_libraries target)
     set (libs)
   elseif (${OCAML_${target}_KIND} STREQUAL "C_OBJECT")
     set (comment  "Linking OCaml C object ${target}")
-    set (ext      ".o")
+    set (ext      ".so")
     set (location "${CMAKE_CURRENT_BINARY_DIR}/${target}${ext}")
     set (opt ${opt} -output-obj ${OCAML_${target}_LINK_FLAGS})
     set (libs     ${libraries})
