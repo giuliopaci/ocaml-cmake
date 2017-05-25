@@ -957,6 +957,8 @@ macro (install_ocaml_targets)
           install (FILES ${file_path}/${file_name_we}${CMAKE_OCaml_CONFIG_ext_lib} DESTINATION
             ${install_DESTINATION})
       endif (native)
+    elseif (${kind} STREQUAL "C_OBJECT")
+      install (FILES ${location} DESTINATION ${install_DESTINATION})
     endif (${kind} STREQUAL "EXECUTABLE")
     set_target_properties (ocaml.${target} PROPERTIES INSTALL_LOCATION ${install_DESTINATION})
   endforeach (target)
