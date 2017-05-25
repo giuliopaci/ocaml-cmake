@@ -94,6 +94,44 @@ if(TMP_VERSION_CMD)
    OUTPUT_VARIABLE CMAKE_OCaml_STD_LIBRARY_PATH
    OUTPUT_STRIP_TRAILING_WHITESPACE
    )
+ 
+ execute_process(
+   COMMAND         ${TMP_VERSION_CMD} -config
+   OUTPUT_VARIABLE CMAKE_OCaml_CONFIG
+   OUTPUT_STRIP_TRAILING_WHITESPACE
+   )
+ 
+ STRING(REGEX REPLACE ";" "\\\\;" CMAKE_OCaml_CONFIG "${CMAKE_OCaml_CONFIG}")
+ STRING(REGEX REPLACE "\n" ";" CMAKE_OCaml_CONFIG "${CMAKE_OCaml_CONFIG}")
+ foreach(entry IN LISTS CMAKE_OCaml_CONFIG)
+   STRING(REGEX REPLACE ":.*" "" key "${entry}")
+   STRING(REGEX REPLACE "[^:]*:" "" value "${entry}")
+   STRING(STRIP "${key}" key)
+   STRING(STRIP "${value}" value)
+   set(CMAKE_OCaml_CONFIG_${key} ${value})
+ endforeach(entry)
+endif()
+
+if(NOT CMAKE_OCaml_CONFIG_ext_lib)
+  if (WIN32)
+    set(CMAKE_OCaml_CONFIG_ext_lib ".lib")
+  else ()
+    set(CMAKE_OCaml_CONFIG_ext_lib ".a")
+  endif()
+endif()
+if(NOT CMAKE_OCaml_CONFIG_ext_dll)
+  if (WIN32)
+    set(CMAKE_OCaml_CONFIG_ext_dll ".dll")
+  else ()
+    set(CMAKE_OCaml_CONFIG_ext_dll ".so")
+  endif()
+endif()
+if(NOT CMAKE_OCaml_CONFIG_ext_obj)
+  if (WIN32)
+    set(CMAKE_OCaml_CONFIG_ext_obj ".obj")
+  else ()
+    set(CMAKE_OCaml_CONFIG_ext_obj ".o")
+  endif()
 endif()
 
 include (FindPackageHandleStandardArgs)
