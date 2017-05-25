@@ -232,6 +232,18 @@ macro (find_ocaml_package name)
       OUTPUT_STRIP_TRAILING_WHITESPACE
       )
 
+    execute_process (
+      COMMAND    ${CMAKE_OCaml_CMD_QUERY} -format "%a" -predicates byte ${name}
+      OUTPUT_VARIABLE ${name_upper}_BYTE_FILE
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      )
+
+    execute_process (
+      COMMAND    ${CMAKE_OCaml_CMD_QUERY} -format "%a" -predicates native ${name}
+      OUTPUT_VARIABLE ${name_upper}_NATIVE_FILE
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      )
+
     find_package_handle_standard_args (${name} DEFAULT_MSG
       ${name_upper}_VERSION
       )
@@ -460,9 +472,14 @@ macro (ocaml_add_object_target target source hasintf objectname)
     list(APPEND package_flags -I "${CMAKE_OCaml_STD_LIBRARY_PATH}")
   endif()
   foreach(pkg ${OCAML_${target}_TRANSPKGS})
-    if(CMAKE_OCaml_FIND)
-      list(APPEND package_flags ${pkg}${libext})
-      #list(APPEND package_flags -package ${pkg})
+    string(TOUPPER ${pkg} PKG)
+    if(${PKG}_INCLUDE_DIR)
+      list(APPEND package_flags -I ${${PKG}_INCLUDE_DIR})
+    endif()
+    if (NOT OCAML_${target}_NATIVE AND ${PKG}_BYTE_FILE)
+      list(APPEND package_flags ${${PKG}_BYTE_FILE})
+    elseif (OCAML_${target}_NATIVE AND ${PKG}_NATIVE_FILE)
+      list(APPEND package_flags ${${PKG}_NATIVE_FILE})
     else()
       list(APPEND package_flags ${pkg}${libext})
     endif()
@@ -772,9 +789,14 @@ macro (target_link_ocaml_libraries target)
         list(APPEND package_flags -I "${CMAKE_OCaml_STD_LIBRARY_PATH}")
       endif()
       foreach(pkg ${OCAML_${target}_TRANSPKGS})
-        if(CMAKE_OCaml_FIND)
-          list(APPEND package_flags ${pkg}${libext})
-          # list(APPEND package_flags -package ${pkg})
+        string(TOUPPER ${pkg} PKG)
+        if(${PKG}_INCLUDE_DIR)
+          list(APPEND package_flags -I ${${PKG}_INCLUDE_DIR})
+        endif()
+        if (NOT OCAML_${target}_NATIVE AND ${PKG}_BYTE_FILE)
+          list(APPEND package_flags ${${PKG}_BYTE_FILE})
+        elseif (OCAML_${target}_NATIVE AND ${PKG}_NATIVE_FILE)
+          list(APPEND package_flags ${${PKG}_NATIVE_FILE})
         else()
           list(APPEND package_flags ${pkg}${libext})
         endif()
