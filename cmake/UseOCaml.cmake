@@ -441,6 +441,14 @@ function (ocaml_get_packages_flags target libext include_flags package_flags int
   set(${intertarget_dependencies} ${tmp_intertarget_dependencies} PARENT_SCOPE)
 endfunction (ocaml_get_packages_flags)
 
+function (ocaml_var_to_flags variable option flags)
+  set (tmpflag)
+  foreach(flag ${variable})
+    list(APPEND tmpflag ${option} ${flag})
+  endforeach()
+  set(${flags} ${tmpflag} PARENT_SCOPE)
+endfunction (ocaml_var_to_flags variable option flags)
+
 # ocaml_add_c_object_target (target native source objectname)
 #   Compiles the Caml source ${source} to native or bytecode object.
 #   The name of the object is written in the variable ${objectname}.
@@ -464,11 +472,14 @@ macro (ocaml_add_c_object_target target source objectname)
   endif (OCAML_${target}_NATIVE)
 
   ocaml_get_packages_flags(${target} ${libext} include_flags package_flags intertarget_dependencies)
+  if(OCAML_${target}_C_FLAGS)
+    ocaml_var_to_flags(${OCAML_${target}_C_FLAGS} -ccopt c_flags)
+  endif()
 
   add_custom_command (OUTPUT ${output}
     COMMAND ${compiler}
       ${CMAKE_OCaml_FLAGS} ${CMAKE_OCaml_FLAGS_${CMAKE_BUILD_TYPE_UPPER}}
-      ${include_flags} ${package_flags}
+      ${include_flags} ${package_flags} ${c_flags}
       -ccopt "-o ${${objectname}}" -c ${source}
 
     MAIN_DEPENDENCY   ${source}
@@ -511,6 +522,9 @@ macro (ocaml_add_object_target target source hasintf objectname)
   get_ocaml_dependencies (${target} ${source} TRUE ${hasintf} depends)
 
   ocaml_get_packages_flags(${target} ${libext} include_flags package_flags intertarget_dependencies)
+  if(OCAML_${target}_C_FLAGS)
+    ocaml_var_to_flags(${OCAML_${target}_C_FLAGS} -ccopt c_flags)
+  endif()
 
   if(${OCAML_${target}_KIND} STREQUAL "C_OBJECT")
     set (object_ext    o)
@@ -519,7 +533,7 @@ macro (ocaml_add_object_target target source hasintf objectname)
     add_custom_command (OUTPUT ${output}
       COMMAND ${compiler}
       ${CMAKE_OCaml_FLAGS} ${CMAKE_OCaml_FLAGS_${CMAKE_BUILD_TYPE_UPPER}}
-      ${include_flags} ${package_flags}
+      ${include_flags} ${package_flags} ${c_flags}
       -o ${${objectname}} -output-obj ${source}
       
       MAIN_DEPENDENCY   ${source}
@@ -531,7 +545,7 @@ macro (ocaml_add_object_target target source hasintf objectname)
     add_custom_command (OUTPUT ${output}
       COMMAND ${compiler}
       ${CMAKE_OCaml_FLAGS} ${CMAKE_OCaml_FLAGS_${CMAKE_BUILD_TYPE_UPPER}}
-      ${include_flags} ${package_flags}
+      ${include_flags} ${package_flags} ${c_flags}
       -o ${${objectname}} -c -impl ${source}
 
       MAIN_DEPENDENCY   ${source}
@@ -565,11 +579,14 @@ macro (ocaml_add_interface_object_target target source)
   get_ocaml_dependencies (${target} ${source} FALSE FALSE depends)
 
   ocaml_get_packages_flags(${target} ${libext} include_flags package_flags intertarget_dependencies)
+  if(OCAML_${target}_C_FLAGS)
+    ocaml_var_to_flags(${OCAML_${target}_C_FLAGS} -ccopt c_flags)
+  endif()
 
   add_custom_command (OUTPUT ${output}
     COMMAND ${compiler}
       ${CMAKE_OCaml_FLAGS} ${CMAKE_OCaml_FLAGS_${CMAKE_BUILD_TYPE_UPPER}}
-      ${include_flags} ${package_flags}
+      ${include_flags} ${package_flags} ${c_flags}
       -o ${output} -c -intf ${source}
 
     MAIN_DEPENDENCY   ${source}
@@ -917,13 +934,13 @@ macro (set_ocaml_target_variables target)
   endforeach (library)
 
   set (OCAML_${target}_LINK_FLAGS ${${target}_LINK_FLAGS})
-
+  set (OCAML_${target}_C_FLAGS ${${target}_C_FLAGS})
 endmacro (set_ocaml_target_variables)
 
 # add_ocaml_executable (name sourcefiles)
 #   See description above.
 macro (add_ocaml_executable target)
-  ocaml_parse_macro_arguments (${target} "NATIVE;BYTECODE;SOURCES;PACKAGES;LIBRARIES;C_LIBRARIES;LINK_FLAGS;INCLUDE_DIRECTORIES" ${ARGN})
+  ocaml_parse_macro_arguments (${target} "NATIVE;BYTECODE;SOURCES;PACKAGES;LIBRARIES;C_LIBRARIES;C_FLAGS;LINK_FLAGS;INCLUDE_DIRECTORIES" ${ARGN})
   set_ocaml_target_variables (${target})
   set (OCAML_${target}_KIND "EXECUTABLE")
   add_ocaml_objects (${target})
@@ -933,7 +950,7 @@ endmacro (add_ocaml_executable)
 # add_ocaml_library (target sourcefiles)
 #   See description above.
 macro (add_ocaml_library target)
-  ocaml_parse_macro_arguments (${target} "NATIVE;BYTECODE;SOURCES;PACKAGES;LIBRARIES;C_LIBRARIES;LINK_FLAGS;INCLUDE_DIRECTORIES" ${ARGN})
+  ocaml_parse_macro_arguments (${target} "NATIVE;BYTECODE;SOURCES;PACKAGES;LIBRARIES;C_LIBRARIES;C_FLAGS;LINK_FLAGS;INCLUDE_DIRECTORIES" ${ARGN})
   set_ocaml_target_variables (${target})
   set (OCAML_${target}_KIND "LIBRARY")
   add_ocaml_objects (${target})
@@ -943,7 +960,7 @@ endmacro (add_ocaml_library)
 # add_ocaml_pack (target sourcefiles)
 #   See description above.
 macro (add_ocaml_pack target)
-  ocaml_parse_macro_arguments (${target} "NATIVE;BYTECODE;SOURCES;PACKAGES;LIBRARIES;C_LIBRARIES;LINK_FLAGS;INCLUDE_DIRECTORIES" ${ARGN})
+  ocaml_parse_macro_arguments (${target} "NATIVE;BYTECODE;SOURCES;PACKAGES;LIBRARIES;C_LIBRARIES;C_FLAGS;LINK_FLAGS;INCLUDE_DIRECTORIES" ${ARGN})
   set_ocaml_target_variables (${target})
   set (OCAML_${target}_KIND "PACK")
   add_ocaml_objects (${target})
@@ -953,7 +970,7 @@ endmacro (add_ocaml_pack)
 # add_ocaml_c_object (target sourcefiles)
 #   See description above.
 macro (add_ocaml_c_object target)
-    ocaml_parse_macro_arguments (${target} "NATIVE;BYTECODE;SOURCES;PACKAGES;LIBRARIES;C_LIBRARIES;LINK_FLAGS;INCLUDE_DIRECTORIES" ${ARGN})
+    ocaml_parse_macro_arguments (${target} "NATIVE;BYTECODE;SOURCES;PACKAGES;LIBRARIES;C_LIBRARIES;C_FLAGS;LINK_FLAGS;INCLUDE_DIRECTORIES" ${ARGN})
   set_ocaml_target_variables (${target})
   set (OCAML_${target}_KIND "C_OBJECT")
   add_ocaml_objects (${target})
