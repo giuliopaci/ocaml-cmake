@@ -377,7 +377,33 @@ function (get_ocaml_dependencies target filename impl hasintf dep)
 
 endfunction (get_ocaml_dependencies)
 
-function (ocaml_get_packages_flags target libext include_flags package_flags)
+
+function (find_ocaml_package_in_targets target name outdep pkgincludedirs pkgfiles)
+  if(NOT ${PKG}_BYTE_FILE AND NOT ${PKG}_NATIVE_FILE)
+    if(OCAML_${name}_KIND)
+      if(${OCAML_${name}_KIND} STREQUAL "LIBRARY")
+        set(found FALSE)
+        if(OCAML_${name}_NATIVE AND OCAML_${target}_NATIVE)
+          set(found TRUE)
+        elseif(OCAML_${name}_BYTECODE AND OCAML_${target}_BYTECODE)
+          set(found TRUE)
+        endif()
+        if(found)
+          get_target_property (location  ocaml.${name} LOCATION)
+          get_target_property (object_directory  ocaml.${name} OBJECT_DIRECTORY)
+
+          get_target_property (output_name  ocaml.${name} OUTPUT_NAME)
+          message("${location} ${output_name} ${object_directory}")
+          set(${outdep} ocaml.${name} PARENT_SCOPE)
+          set(${pkgfiles} ${location} PARENT_SCOPE)
+          set(${pkgincludedirs} ${object_directory} PARENT_SCOPE)
+        endif()
+      endif()
+    endif()
+  endif()
+endfunction (find_ocaml_package_in_targets)
+
+function (ocaml_get_packages_flags target libext include_flags package_flags intertarget_dependencies)
   set(tmp_include_flags)
   if(CMAKE_OCaml_STD_LIBRARY_PATH)
     list(APPEND tmp_include_flags -I "${CMAKE_OCaml_STD_LIBRARY_PATH}")
@@ -388,6 +414,7 @@ function (ocaml_get_packages_flags target libext include_flags package_flags)
   set(${include_flags} ${tmp_include_flags} PARENT_SCOPE)
 
   set(tmp_package_flags)
+  set(tmp_intertarget_dependencies)
 
   foreach(pkg ${OCAML_${target}_TRANSPKGS})
     string(TOUPPER ${pkg} PKG)
@@ -399,11 +426,19 @@ function (ocaml_get_packages_flags target libext include_flags package_flags)
     elseif (OCAML_${target}_NATIVE AND ${PKG}_NATIVE_FILE)
       list(APPEND tmp_package_flags ${${PKG}_NATIVE_FILE})
     else()
-      list(APPEND tmp_package_flags ${pkg}${libext})
+      find_ocaml_package_in_targets(${target} ${pkg} deptoadd pkgincludedirs pkgfiles)
+      if(deptoadd)
+        list(APPEND tmp_intertarget_dependencies ${deptoadd})
+        list(APPEND tmp_package_flags -I ${pkgincludedirs})
+        list(APPEND tmp_package_flags ${pkgfiles})
+      else()
+        list(APPEND tmp_package_flags ${pkg}${libext})
+      endif()
     endif()
 
   endforeach()
   set(${package_flags} ${tmp_package_flags} PARENT_SCOPE)
+  set(${intertarget_dependencies} ${tmp_intertarget_dependencies} PARENT_SCOPE)
 endfunction (ocaml_get_packages_flags)
 
 # ocaml_add_c_object_target (target native source objectname)
@@ -428,7 +463,7 @@ macro (ocaml_add_c_object_target target source objectname)
     set (output        ${${objectname}})
   endif (OCAML_${target}_NATIVE)
 
-  ocaml_get_packages_flags(${target} ${libext} include_flags package_flags)
+  ocaml_get_packages_flags(${target} ${libext} include_flags package_flags intertarget_dependencies)
 
   add_custom_command (OUTPUT ${output}
     COMMAND ${compiler}
@@ -437,7 +472,7 @@ macro (ocaml_add_c_object_target target source objectname)
       -ccopt "-o ${${objectname}}" -c ${source}
 
     MAIN_DEPENDENCY   ${source}
-    DEPENDS           ${depends}
+    DEPENDS           ${depends} ${intertarget_dependencies}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT           "Building OCaml object ${source_name_we}.${object_ext}"
     )
@@ -475,7 +510,7 @@ macro (ocaml_add_object_target target source hasintf objectname)
 
   get_ocaml_dependencies (${target} ${source} TRUE ${hasintf} depends)
 
-  ocaml_get_packages_flags(${target} ${libext} include_flags package_flags)
+  ocaml_get_packages_flags(${target} ${libext} include_flags package_flags intertarget_dependencies)
 
   if(${OCAML_${target}_KIND} STREQUAL "C_OBJECT")
     set (object_ext    o)
@@ -488,7 +523,7 @@ macro (ocaml_add_object_target target source hasintf objectname)
       -o ${${objectname}} -output-obj ${source}
       
       MAIN_DEPENDENCY   ${source}
-      DEPENDS           ${depends}
+      DEPENDS           ${depends} ${intertarget_dependencies}
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       COMMENT           "Building OCaml object ${source_name_we}.${object_ext}"
       )
@@ -500,7 +535,7 @@ macro (ocaml_add_object_target target source hasintf objectname)
       -o ${${objectname}} -c -impl ${source}
 
       MAIN_DEPENDENCY   ${source}
-      DEPENDS           ${depends}
+      DEPENDS           ${depends} ${intertarget_dependencies}
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       COMMENT           "Building OCaml object ${source_name_we}.${object_ext}"
       )
@@ -529,7 +564,7 @@ macro (ocaml_add_interface_object_target target source)
 
   get_ocaml_dependencies (${target} ${source} FALSE FALSE depends)
 
-  ocaml_get_packages_flags(${target} ${libext} include_flags package_flags)
+  ocaml_get_packages_flags(${target} ${libext} include_flags package_flags intertarget_dependencies)
 
   add_custom_command (OUTPUT ${output}
     COMMAND ${compiler}
@@ -538,7 +573,7 @@ macro (ocaml_add_interface_object_target target source)
       -o ${output} -c -intf ${source}
 
     MAIN_DEPENDENCY   ${source}
-    DEPENDS           ${depends}
+    DEPENDS           ${depends} ${intertarget_dependencies}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT           "Building OCaml object ${source_name_we}.cmi"
     )
@@ -767,7 +802,7 @@ macro (target_link_ocaml_libraries target)
 
   if((${OCAML_${target}_KIND} STREQUAL "EXECUTABLE") OR
       (${OCAML_${target}_KIND} STREQUAL "C_OBJECT"))
-      ocaml_get_packages_flags(${target} ${libext} include_flags package_flags)
+      ocaml_get_packages_flags(${target} ${libext} include_flags package_flags intertarget_dependencies)
       if(package_flags OR include_flags)
         set(opt ${opt} ${include_flags} ${package_flags})
       endif()
@@ -811,7 +846,7 @@ macro (target_link_ocaml_libraries target)
 
   add_custom_command (OUTPUT ${location}
     COMMAND ${compiler} ${opt} -o ${target}${ext} ${libs} ${OCAML_${target}_OBJECTS}
-    DEPENDS ${OCAML_${target}_OBJECTS} ${deps}
+    DEPENDS ${OCAML_${target}_OBJECTS} ${deps} ${intertarget_dependencies}
     COMMENT "${comment}"
     )
 
