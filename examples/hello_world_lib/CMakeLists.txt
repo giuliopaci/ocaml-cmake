@@ -47,11 +47,6 @@ endif()
 
 add_ocaml_library(hello_world_wrap NATIVE SOURCES hellowrap_ocaml.ml PACKAGES hello_world)
 add_ocaml_c_object(libhelloworld NATIVE SOURCES hellowrap-c.c hello.h PACKAGES hello_world hello_world_wrap ${so_flags})
-# TODO: the following is probably better handled in UseOCaml.cmake
-get_property(location TARGET ocaml.libhelloworld PROPERTY LOCATION)
-add_library(libhelloworld UNKNOWN IMPORTED)
-set_property(TARGET libhelloworld PROPERTY IMPORTED_LOCATION ${location})
-add_dependencies(libhelloworld ocaml.libhelloworld)
 
 add_executable(main-libhelloworld main.c)
 target_link_libraries(main-libhelloworld libhelloworld)
