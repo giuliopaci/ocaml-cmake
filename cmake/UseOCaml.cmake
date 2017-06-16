@@ -975,6 +975,11 @@ macro (add_ocaml_c_object target)
   set (OCAML_${target}_KIND "C_OBJECT")
   add_ocaml_objects (${target})
   target_link_ocaml_libraries (${target})
+  # expose target as a C library as well
+  get_property(location TARGET ocaml.${target} PROPERTY LOCATION)
+  add_library(${target} UNKNOWN IMPORTED)
+  set_property(TARGET ${target} PROPERTY IMPORTED_LOCATION ${location})
+  add_dependencies(${target} ocaml.${target})
 endmacro (add_ocaml_c_object)
 
 # install_ocaml_targets (executables DESTINATION destination)
