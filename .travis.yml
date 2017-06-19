@@ -1,0 +1,47 @@
+language: c
+
+branches:
+  only:
+    - master
+
+matrix:
+  allow_failures:
+
+sudo: required
+dist: trusty
+group: edge
+
+osx_image: xcode8
+
+os:
+  - linux
+  - osx
+
+compiler:
+  - gcc
+  - clang
+
+env:
+  - CROSSCOMPILE=native
+
+addons:
+  apt:
+    sources:
+      - sourceline: ppa:avsm/ppa
+        key_url: http://keyserver.ubuntu.com:11371/pks/lookup?op=get&search=0xDD3D0AF807E3ADD0
+    packages:
+      - cmake
+      - swig
+      - ocaml
+
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update          ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install swig    ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install curl    ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then curl -L https://github.com/ocaml/ocaml/archive/trunk.zip  -o ocaml-trunk.zip ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then unzip ocaml-trunk.zip; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then BASEDIR=`pwd` && cd ocaml-trunk && ./configure -prefix "$BASEDIR"/native-ocaml && make world && make bootstrap && make opt && make opt.opt && umask 022 && make install && cd "$BASEDIR"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export PATH="`pwd`"/native-ocaml/bin:"$PATH"; fi
+
+script:
+  - if [[ "$CROSSCOMPILE" == "native" ]]; then ocamlc -config; rm -fr tmp-build && mkdir -p tmp-build && cd tmp-build && cmake ../examples/hello_world_lib -DCMAKE_VERBOSE_MAKEFILE=on -DCMAKE_INSTALL_PREFIX:PATH="`pwd`"/install -DCMAKE_C_FLAGS="-Wall -Werror" -DCMAKE_OCaml_FLAGS=-verbose -DCMAKE_OCaml_LINKER_FLAGS=-verbose && make && ( make test || ( cat Testing/Temporary/LastTest.log ; exit 1 ) ); fi
