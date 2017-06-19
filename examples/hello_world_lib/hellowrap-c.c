@@ -27,7 +27,6 @@ void hello_world() {
 	{
 		hello_world_fun = caml_named_value("hello_world");
 	}
-//	fprintf(stderr, "ciao\n");
 
 	res =  caml_callbackN_exn( *hello_world_fun, 0, NULL );
 	if (Is_exception_result(res))
