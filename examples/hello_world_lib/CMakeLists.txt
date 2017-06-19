@@ -8,17 +8,17 @@ find_package(OCaml REQUIRED)
 
 include(UseOCaml)
 
-add_ocaml_executable(main-bytecode BYTECODE SOURCES hello.ml main-ocaml.ml)
+add_ocaml_executable(main-bytecode BYTECODE SOURCES hello.ml main_ocaml.ml)
 
-add_ocaml_executable(main-native NATIVE SOURCES hello.ml main-ocaml.ml)
+add_ocaml_executable(main-native NATIVE SOURCES hello.ml main_ocaml.ml)
 
 add_ocaml_library(hello_world NATIVE SOURCES hello.ml)
 
 add_ocaml_library(hello_world-bytecode BYTECODE SOURCES hello.ml)
 
-add_ocaml_executable(main2-native NATIVE SOURCES main-ocaml.ml PACKAGES hello_world)
+add_ocaml_executable(main2-native NATIVE SOURCES main_ocaml.ml PACKAGES hello_world)
 
-add_ocaml_executable(main2-bytecode BYTECODE SOURCES main-ocaml.ml PACKAGES hello_world-bytecode)
+add_ocaml_executable(main2-bytecode BYTECODE SOURCES main_ocaml.ml PACKAGES hello_world-bytecode)
 
 
 # TODO: remove the following block that is probably better handled in UseOCaml.cmake
