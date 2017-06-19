@@ -14,9 +14,8 @@ void hello_world() {
 	if (is_initialized == 0)
 	{
 		is_initialized = 1;
-		char* dummyargv[2];
-		dummyargv[0]="";
-		dummyargv[1]=NULL;
+		char* dummyargv[1];
+		dummyargv[0]=NULL;
 		caml_startup(dummyargv);
 	}
 	CAMLparam0();
@@ -31,9 +30,11 @@ void hello_world() {
 	{
 		fprintf(stderr, "%s\n", "There was an error in function lookup.");
 		CAMLreturn0;
+		return;
 	}
 
-	res =  caml_callbackN_exn( *hello_world_fun, 0, NULL );
+	res =  caml_callback_exn( *hello_world_fun, Val_unit );
+
 	if (Is_exception_result(res))
 	{
 		fprintf(stderr, "%s\n", "There was an error.");
