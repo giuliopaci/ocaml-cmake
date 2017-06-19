@@ -14,6 +14,12 @@ add_ocaml_executable(main-native NATIVE SOURCES hello.ml main-ocaml.ml)
 
 add_ocaml_library(hello_world NATIVE SOURCES hello.ml)
 
+add_ocaml_library(hello_world-bytecode BYTECODE SOURCES hello.ml)
+
+add_ocaml_executable(main2-native NATIVE SOURCES main-ocaml.ml PACKAGES hello_world)
+
+add_ocaml_executable(main2-bytecode BYTECODE SOURCES main-ocaml.ml PACKAGES hello_world-bytecode)
+
 
 # TODO: remove the following block that is probably better handled in UseOCaml.cmake
 set(so_c_flags "")
@@ -50,3 +56,9 @@ add_ocaml_c_object(libhelloworld NATIVE SOURCES hellowrap-c.c hello.h PACKAGES h
 
 add_executable(main-libhelloworld main.c)
 target_link_libraries(main-libhelloworld libhelloworld)
+
+add_ocaml_library(hello_world_wrap-bytecode BYTECODE SOURCES hellowrap_ocaml.ml PACKAGES hello_world-bytecode)
+add_ocaml_c_object(libhelloworld-bytecode BYTECODE SOURCES hellowrap-c.c hello.h PACKAGES hello_world-bytecode hello_world_wrap-bytecode ${so_flags})
+
+add_executable(main-libhelloworld-bytecode main.c)
+target_link_libraries(main-libhelloworld-bytecode libhelloworld-bytecode)
