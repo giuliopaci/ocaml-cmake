@@ -27,6 +27,11 @@ void hello_world() {
 	{
 		hello_world_fun = caml_named_value("hello_world");
 	}
+	if (hello_world_fun == NULL)
+	{
+		fprintf(stderr, "%s\n", "There was an error in function lookup.");
+		CAMLreturn0;
+	}
 
 	res =  caml_callbackN_exn( *hello_world_fun, 0, NULL );
 	if (Is_exception_result(res))
