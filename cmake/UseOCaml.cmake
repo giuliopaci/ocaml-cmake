@@ -385,7 +385,7 @@ function (find_ocaml_package_in_targets target name outdep pkgincludedirs pkgfil
         set(found FALSE)
         if(OCAML_${name}_NATIVE AND OCAML_${target}_NATIVE)
           set(found TRUE)
-        elseif(OCAML_${name}_BYTECODE AND OCAML_${target}_BYTECODE)
+        elseif(NOT OCAML_${name}_NATIVE AND NOT OCAML_${target}_NATIVE)
           set(found TRUE)
         endif()
         if(found)
