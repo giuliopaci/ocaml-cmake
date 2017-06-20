@@ -24,7 +24,7 @@ add_ocaml_executable(main2-bytecode BYTECODE SOURCES main_ocaml.ml PACKAGES hell
 # TODO: remove the following block that is probably better handled in UseOCaml.cmake
 set(so_c_flags "")
 set(so_link_flags "")
-# TODO: remove this line that is needed just to load hunposwrap
+# TODO: remove this line that is needed just to load ocaml libraries that contains registered callbacks
 list (APPEND so_link_flags -linkall)
 if(${CMAKE_OCaml_CONFIG_os_type} MATCHES "[wW][iI][nN]32")
   if(${CMAKE_OCaml_CONFIG_native_c_compiler} MATCHES "[gG][cC][cC]")
