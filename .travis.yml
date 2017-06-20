@@ -6,7 +6,39 @@ branches:
 
 matrix:
   allow_failures:
-
+    - env:
+        - CROSSCOMPILE=x86_64-w64-mingw32
+        - WINEDEBUG=-all
+    - env:
+        - CROSSCOMPILE=i686-w64-mingw32
+        - WINEDEBUG=-all
+  include:
+    - os: linux
+      compiler: gcc
+      env:
+        - CROSSCOMPILE=x86_64-w64-mingw32
+        - WINEDEBUG=-all
+      addons:
+        apt:
+          packages:
+            - cmake
+            - swig
+            - ocaml-mingw-w64-x86-64
+            - gcc-mingw-w64-x86-64
+            - wine
+    - os: linux
+      compiler: gcc
+      env:
+        - CROSSCOMPILE=i686-w64-mingw32
+        - WINEDEBUG=-all
+      addons:
+        apt:
+          packages:
+            - cmake
+            - swig
+            - ocaml-mingw-w64-i686
+            - gcc-mingw-w64-i686
+            - wine
 sudo: required
 dist: trusty
 group: edge
@@ -45,3 +77,5 @@ before_install:
 
 script:
   - if [[ "$CROSSCOMPILE" == "native" ]]; then ocamlc -config; rm -fr tmp-build && mkdir -p tmp-build && cd tmp-build && cmake ../examples/hello_world_lib -DCMAKE_VERBOSE_MAKEFILE=on -DCMAKE_INSTALL_PREFIX:PATH="`pwd`"/install -DCMAKE_C_FLAGS="-Wall -Werror" -DCMAKE_OCaml_FLAGS=-verbose -DCMAKE_OCaml_LINKER_FLAGS=-verbose && make && ( make test || ( cat Testing/Temporary/LastTest.log ; exit 1 ) ); fi
+  - if [[ "$CROSSCOMPILE" == "x86_64-w64-mingw32" ]]; then x86_64-w64-mingw32-ocamlc -config; rm -fr tmp-build && mkdir -p tmp-build && cd tmp-build && cmake ../examples/hello_world_lib -DCMAKE_VERBOSE_MAKEFILE=on -DCMAKE_INSTALL_PREFIX:PATH="`pwd`"/install -DCMAKE_C_FLAGS="-Wall -Werror" -DCMAKE_OCaml_FLAGS=-verbose -DCMAKE_OCaml_LINKER_FLAGS=-verbose -DCMAKE_TOOLCHAIN_FILE=../toolchains/Toolchain-mingw64.cmake && make && ( make test || ( cat Testing/Temporary/LastTest.log ; exit 1 ) ) ; fi
+  - if [[ "$CROSSCOMPILE" == "i686-w64-mingw32" ]]; then i686-w64-mingw32-ocamlc -config; rm -fr tmp-build && mkdir -p tmp-build && cd tmp-build && cmake ../examples/hello_world_lib -DCMAKE_VERBOSE_MAKEFILE=on -DCMAKE_INSTALL_PREFIX:PATH="`pwd`"/install -DCMAKE_C_FLAGS="-Wall -Werror" -DCMAKE_OCaml_FLAGS=-verbose -DCMAKE_OCaml_LINKER_FLAGS=-verbose -DCMAKE_TOOLCHAIN_FILE=../toolchains/Toolchain-mingw32.cmake && make && ( make test || ( cat Testing/Temporary/LastTest.log ; exit 1 ) ) ; fi
