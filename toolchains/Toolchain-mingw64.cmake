@@ -99,3 +99,10 @@ set(ENV{PKG_CONFIG_PATH} ${CMAKE_FIND_ROOT_PATH}/lib/pkgconfig)
 
 set(INSTALL_PREFIX ${CMAKE_FIND_ROOT_PATH})
 set(ENV{MINGDIR} ${CMAKE_FIND_ROOT_PATH})
+
+
+#-----------------------------------------------------------------------------#
+#                               Testing                                       #
+#-----------------------------------------------------------------------------#
+
+set(TARGET_SYSTEM_EMULATOR wine)
