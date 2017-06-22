@@ -44,7 +44,7 @@ set(CMAKE_SYSTEM_NAME Windows)
 # Assume the target architecture.
 # XXX for some reason the value set here gets cleared before we reach the
 # main CMakeLists.txt; see that file for a workaround.
-set(CMAKE_SYSTEM_PROCESSOR i686)
+set(CMAKE_SYSTEM_PROCESSOR x86_64)
 
 
 #-----------------------------------------------------------------------------#
