@@ -60,6 +60,7 @@ if(EXISTS /usr/x86_64-w64-mingw32)
     set(CMAKE_OCaml_COMPILER ocamlfind -toolchain windows ocamlc)
     set(CMAKE_OCaml_OPT_COMPILER ocamlfind -toolchain windows ocamlopt)
     set(CMAKE_OCaml_DEP ocamlfind -toolchain windows ocamldep)
+    set(CMAKE_OCaml_FIND ocamlfind -toolchain windows)
     set(CMAKE_FIND_ROOT_PATH /usr/x86_64-w64-mingw32)
 else()
     # Else fill in local path which the user will likely adjust.
