@@ -7,7 +7,7 @@
 ##                                                                           ##
 ###############################################################################
 ##                                                                           ##
-## CMake toolchain file for 32bit mingw cross-compilation                    ##
+## CMake toolchain file for 64bit mingw cross-compilation                    ##
 ## This has been copied from Speect (copied from Allegro)                    ##
 ##                                                                           ##
 ###############################################################################
