@@ -20,12 +20,15 @@ matrix:
         - WINEDEBUG=-all
       addons:
         apt:
+          sources:
+            - sourceline: deb https://dl.winehq.org/wine-builds/ubuntu/ trusty main
+              key_url: https://dl.winehq.org/wine-builds/Release.key
           packages:
             - cmake
             - swig
             - ocaml-mingw-w64-x86-64
             - gcc-mingw-w64-x86-64
-            - wine
+            - winehq-stable
     - os: linux
       compiler: gcc
       env:
@@ -33,12 +36,15 @@ matrix:
         - WINEDEBUG=-all
       addons:
         apt:
+          sources:
+            - sourceline: deb https://dl.winehq.org/wine-builds/ubuntu/ trusty main
+              key_url: https://dl.winehq.org/wine-builds/Release.key
           packages:
             - cmake
             - swig
             - ocaml-mingw-w64-i686
             - gcc-mingw-w64-i686
-            - wine
+            - winehq-stable
 sudo: required
 dist: trusty
 group: edge
