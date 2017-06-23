@@ -13,33 +13,35 @@ void hello_world() {
 	/* Startup OCaml */
 	if (is_initialized == 0)
 	{
-		is_initialized = 1;
 		char* dummyargv[1];
-		dummyargv[0]=NULL;
+		dummyargv[0] = NULL;
 		caml_startup(dummyargv);
+		is_initialized = 1;
 	}
-	CAMLparam0();
-	CAMLlocal1(res);
+	{
+		CAMLparam0();
+		CAMLlocal1(res);
 
-	static value* hello_world_fun = NULL;
-	if (hello_world_fun == NULL)
-	{
-		hello_world_fun = caml_named_value("hello_world");
-	}
-	if (hello_world_fun == NULL)
-	{
-		fprintf(stderr, "%s\n", "There was an error in function lookup.");
+		static value* hello_world_fun = NULL;
+		if (hello_world_fun == NULL)
+		{
+			hello_world_fun = caml_named_value("hello_world");
+		}
+		if (hello_world_fun == NULL)
+		{
+			fprintf(stderr, "%s\n", "There was an error in function lookup.");
+			CAMLreturn0;
+			return;
+		}
+
+		res =  caml_callback_exn( *hello_world_fun, Val_unit );
+
+		if (Is_exception_result(res))
+		{
+			fprintf(stderr, "%s\n", "There was an error.");
+			CAMLreturn0;
+		}
+
 		CAMLreturn0;
-		return;
 	}
-
-	res =  caml_callback_exn( *hello_world_fun, Val_unit );
-
-	if (Is_exception_result(res))
-	{
-		fprintf(stderr, "%s\n", "There was an error.");
-		CAMLreturn0;
-	}
-
-	CAMLreturn0;
 }
