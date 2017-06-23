@@ -458,9 +458,9 @@ macro (ocaml_add_c_object_target target source objectname)
   get_filename_component (source_name    ${source} NAME)
   get_filename_component (source_path    ${source} PATH)
 
-  if(CMAKE_OCaml_CONFIG_ext_cc_obj)
-    set (object_ext    ${CMAKE_OCaml_CONFIG_ext_cc_obj})
-  elseif(CMAKE_OCaml_CONFIG_ext_obj)
+  #if(CMAKE_OCaml_CONFIG_ext_cc_obj)
+  #  set (object_ext    ${CMAKE_OCaml_CONFIG_ext_cc_obj})
+  if(CMAKE_OCaml_CONFIG_ext_obj)
     set (object_ext    ${CMAKE_OCaml_CONFIG_ext_obj})
   else()
     set (object_ext    .o)
@@ -482,11 +482,17 @@ macro (ocaml_add_c_object_target target source objectname)
     ocaml_var_to_flags("${OCAML_${target}_C_FLAGS}" -ccopt c_flags)
   endif()
 
+  if(${CMAKE_OCaml_CONFIG_ccomp_type} MATCHES "[mM][sS][vV][cC]")
+    set(output_ccopt "/Fo${${objectname}}")
+  else()
+    set(output_ccopt "-o ${${objectname}}")
+  endif()
+
   add_custom_command (OUTPUT ${output}
     COMMAND ${compiler}
       ${CMAKE_OCaml_FLAGS} ${CMAKE_OCaml_FLAGS_${CMAKE_BUILD_TYPE_UPPER}}
       ${include_flags} ${package_flags} ${c_flags}
-      -ccopt "-o ${${objectname}}" -c ${source}
+      -ccopt "${output_ccopt}" -c ${source}
 
     MAIN_DEPENDENCY   ${source}
     DEPENDS           ${depends} ${intertarget_dependencies}
@@ -533,9 +539,9 @@ macro (ocaml_add_object_target target source hasintf objectname)
   endif()
 
   if(${OCAML_${target}_KIND} STREQUAL "C_OBJECT")
-    if(CMAKE_OCaml_CONFIG_ext_cc_obj)
-      set (object_ext    ${CMAKE_OCaml_CONFIG_ext_cc_obj})
-    elseif(CMAKE_OCaml_CONFIG_ext_obj)
+    #if(CMAKE_OCaml_CONFIG_ext_cc_obj)
+    #  set (object_ext    ${CMAKE_OCaml_CONFIG_ext_cc_obj})
+    if(CMAKE_OCaml_CONFIG_ext_obj)
       set (object_ext    ${CMAKE_OCaml_CONFIG_ext_obj})
     else()
       set (object_ext    .o)
