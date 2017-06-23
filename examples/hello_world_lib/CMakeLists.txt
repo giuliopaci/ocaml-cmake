@@ -8,22 +8,11 @@ find_package(OCaml REQUIRED)
 
 include(UseOCaml)
 
-add_ocaml_executable(main-bytecode BYTECODE SOURCES hello.ml main_ocaml.ml)
-
-add_ocaml_executable(main-native NATIVE SOURCES hello.ml main_ocaml.ml)
-
-add_ocaml_library(hello_world NATIVE SOURCES hello.ml)
-
-add_ocaml_library(hello_world-bytecode BYTECODE SOURCES hello.ml)
-
-add_ocaml_executable(main2-native NATIVE SOURCES main_ocaml.ml PACKAGES hello_world)
-
-add_ocaml_executable(main2-bytecode BYTECODE SOURCES main_ocaml.ml PACKAGES hello_world-bytecode)
-
 
 # TODO: remove the following block that is probably better handled in UseOCaml.cmake
 set(so_c_flags "")
 set(so_link_flags "")
+set(so_link_flags_bytecode "")
 # TODO: remove this line that is needed just to load ocaml libraries that contains registered callbacks
 list (APPEND so_link_flags -linkall)
 if(${CMAKE_OCaml_CONFIG_os_type} MATCHES "[wW][iI][nN]32")
@@ -66,6 +55,18 @@ endif()
 if(so_link_flags_bytecode)
   list (APPEND so_flags_bytecode ${so_link_flags_bytecode})
 endif()
+
+add_ocaml_executable(main-bytecode BYTECODE SOURCES hello.ml main_ocaml.ml LINK_FLAGS -custom ${so_link_flags_bytecode})
+
+add_ocaml_executable(main-native NATIVE SOURCES hello.ml main_ocaml.ml)
+
+add_ocaml_library(hello_world NATIVE SOURCES hello.ml)
+
+add_ocaml_library(hello_world-bytecode BYTECODE SOURCES hello.ml)
+
+add_ocaml_executable(main2-native NATIVE SOURCES main_ocaml.ml PACKAGES hello_world)
+
+add_ocaml_executable(main2-bytecode BYTECODE SOURCES main_ocaml.ml PACKAGES hello_world-bytecode LINK_FLAGS -custom ${so_link_flags_bytecode})
 
 add_ocaml_library(hello_world_wrap NATIVE SOURCES hellowrap_ocaml.ml PACKAGES hello_world)
 add_ocaml_c_object(libhelloworld NATIVE SOURCES hellowrap-c.c hello.h PACKAGES hello_world hello_world_wrap ${so_flags})
