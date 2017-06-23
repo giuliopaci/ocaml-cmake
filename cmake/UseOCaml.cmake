@@ -458,8 +458,14 @@ macro (ocaml_add_c_object_target target source objectname)
   get_filename_component (source_name    ${source} NAME)
   get_filename_component (source_path    ${source} PATH)
 
-  set (object_ext    o)
-  set (${objectname} ${OCAML_${target}_OUTPUT_DIR}/${source_name_we}.${object_ext})
+  if(CMAKE_OCaml_CONFIG_ext_cc_obj)
+    set (object_ext    ${CMAKE_OCaml_CONFIG_ext_cc_obj})
+  elseif(CMAKE_OCaml_CONFIG_ext_obj)
+    set (object_ext    ${CMAKE_OCaml_CONFIG_ext_obj})
+  else()
+    set (object_ext    .o)
+  endif()
+  set (${objectname} ${OCAML_${target}_OUTPUT_DIR}/${source_name_we}${object_ext})
   set (output        ${${objectname}})
   if (OCAML_${target}_NATIVE)
     set (libext ".cmxa")
@@ -467,7 +473,7 @@ macro (ocaml_add_c_object_target target source objectname)
   else (OCAML_${target}_NATIVE)
     set (libext ".cma")
     set (compiler      ${CMAKE_OCaml_CMD_COMPILER})
-    set (${objectname} ${OCAML_${target}_OUTPUT_DIR}/${source_name_we}.${object_ext})
+    set (${objectname} ${OCAML_${target}_OUTPUT_DIR}/${source_name_we}${object_ext})
     set (output        ${${objectname}})
   endif (OCAML_${target}_NATIVE)
 
@@ -485,10 +491,10 @@ macro (ocaml_add_c_object_target target source objectname)
     MAIN_DEPENDENCY   ${source}
     DEPENDS           ${depends} ${intertarget_dependencies}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMENT           "Building OCaml object ${source_name_we}.${object_ext}"
+    COMMENT           "Building OCaml object ${source_name_we}${object_ext}"
     )
 
-  add_custom_target (${target}.${source_name_we}.${object_ext} DEPENDS ${output})
+  add_custom_target (${target}.${source_name_we}${object_ext} DEPENDS ${output})
 
 endmacro (ocaml_add_c_object_target)
 
@@ -502,16 +508,16 @@ macro (ocaml_add_object_target target source hasintf objectname)
   get_filename_component (source_path    ${source} PATH)
 
   if (OCAML_${target}_NATIVE)
-    set (object_ext    cmx)
+    set (object_ext    .cmx)
     set (libext ".cmxa")
     set (compiler      ${CMAKE_OCaml_CMD_OPT_COMPILER})
-    set (${objectname} ${OCAML_${target}_OUTPUT_DIR}/${source_name_we}.${object_ext})
+    set (${objectname} ${OCAML_${target}_OUTPUT_DIR}/${source_name_we}${object_ext})
     set (output        ${${objectname}} ${OCAML_${target}_OUTPUT_DIR}/${source_name_we}${CMAKE_OCaml_CONFIG_ext_obj})
   else (OCAML_${target}_NATIVE)
-    set (object_ext    cmo)
+    set (object_ext    .cmo)
     set (libext ".cma")
     set (compiler      ${CMAKE_OCaml_CMD_COMPILER})
-    set (${objectname} ${OCAML_${target}_OUTPUT_DIR}/${source_name_we}.${object_ext})
+    set (${objectname} ${OCAML_${target}_OUTPUT_DIR}/${source_name_we}${object_ext})
     set (output        ${${objectname}})
   endif (OCAML_${target}_NATIVE)
 
@@ -527,8 +533,14 @@ macro (ocaml_add_object_target target source hasintf objectname)
   endif()
 
   if(${OCAML_${target}_KIND} STREQUAL "C_OBJECT")
-    set (object_ext    o)
-    set (${objectname} ${OCAML_${target}_OUTPUT_DIR}/${source_name_we}.${object_ext})
+    if(CMAKE_OCaml_CONFIG_ext_cc_obj)
+      set (object_ext    ${CMAKE_OCaml_CONFIG_ext_cc_obj})
+    elseif(CMAKE_OCaml_CONFIG_ext_obj)
+      set (object_ext    ${CMAKE_OCaml_CONFIG_ext_obj})
+    else()
+      set (object_ext    .o)
+    endif()
+    set (${objectname} ${OCAML_${target}_OUTPUT_DIR}/${source_name_we}${object_ext})
     set (output        ${${objectname}})
     add_custom_command (OUTPUT ${output}
       COMMAND ${compiler}
@@ -539,7 +551,7 @@ macro (ocaml_add_object_target target source hasintf objectname)
       MAIN_DEPENDENCY   ${source}
       DEPENDS           ${depends} ${intertarget_dependencies}
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-      COMMENT           "Building OCaml object ${source_name_we}.${object_ext}"
+      COMMENT           "Building OCaml object ${source_name_we}${object_ext}"
       )
   else(${OCAML_${target}_KIND} STREQUAL "C_OBJECT")
     add_custom_command (OUTPUT ${output}
@@ -551,11 +563,11 @@ macro (ocaml_add_object_target target source hasintf objectname)
       MAIN_DEPENDENCY   ${source}
       DEPENDS           ${depends} ${intertarget_dependencies}
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-      COMMENT           "Building OCaml object ${source_name_we}.${object_ext}"
+      COMMENT           "Building OCaml object ${source_name_we}${object_ext}"
       )
   endif(${OCAML_${target}_KIND} STREQUAL "C_OBJECT")
 
-  add_custom_target (${target}.${source_name_we}.${object_ext} DEPENDS ${output})
+  add_custom_target (${target}.${source_name_we}${object_ext} DEPENDS ${output})
 
 endmacro (ocaml_add_object_target)
 
