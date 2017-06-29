@@ -35,6 +35,7 @@ elseif(${CMAKE_OCaml_CONFIG_system} MATCHES "[mM][aA][cC][oO][sS][xX]")
   endif()
 else()
 endif()
+list (APPEND so_c_flags -DHELLO_LIBRARIES_EXPORTS)
 set(so_flags)
 if(so_c_flags)
   list (APPEND so_flags C_FLAGS ${so_c_flags})
@@ -72,12 +73,14 @@ add_ocaml_library(hello_world_wrap NATIVE SOURCES hellowrap_ocaml.ml PACKAGES he
 add_ocaml_c_object(libhelloworld NATIVE SOURCES hellowrap-c.c hello.h PACKAGES hello_world hello_world_wrap ${so_flags})
 
 add_executable(main-libhelloworld main.c)
+target_compile_definitions(main-libhelloworld PRIVATE HELLO_LIBRARIES_EXPORTS)
 target_link_libraries(main-libhelloworld libhelloworld)
 
 add_ocaml_library(hello_world_wrap-bytecode BYTECODE SOURCES hellowrap_ocaml.ml PACKAGES hello_world-bytecode)
 add_ocaml_c_object(libhelloworld-bytecode BYTECODE SOURCES hellowrap-c.c hello.h PACKAGES hello_world-bytecode hello_world_wrap-bytecode ${so_flags_bytecode})
 
 add_executable(main-libhelloworld-bytecode main.c)
+target_compile_definitions(main-libhelloworld-bytecode PRIVATE HELLO_LIBRARIES_EXPORTS)
 target_link_libraries(main-libhelloworld-bytecode libhelloworld-bytecode)
 
 
