@@ -5,7 +5,9 @@
 #include <caml/memory.h>
 #include <caml/fail.h>
 #include "stdio.h"
+#define HELLO_SRC
 #include "hello.h"
+#undef HELLO_SRC
 
 static int is_initialized = 0;
 
