@@ -72,16 +72,16 @@ add_ocaml_executable(main2-bytecode BYTECODE SOURCES main_ocaml.ml PACKAGES hell
 add_ocaml_library(hello_world_wrap NATIVE SOURCES hellowrap_ocaml.ml PACKAGES hello_world)
 add_ocaml_c_object(libhelloworld NATIVE SOURCES hellowrap-c.c hello.h PACKAGES hello_world hello_world_wrap ${so_flags})
 
-add_executable(main-libhelloworld main.c)
-target_compile_definitions(main-libhelloworld PRIVATE HELLO_LIBRARIES_EXPORTS)
-target_link_libraries(main-libhelloworld libhelloworld)
+# add_executable(main-libhelloworld main.c)
+# target_compile_definitions(main-libhelloworld PRIVATE HELLO_LIBRARIES_EXPORTS)
+# target_link_libraries(main-libhelloworld libhelloworld)
 
 add_ocaml_library(hello_world_wrap-bytecode BYTECODE SOURCES hellowrap_ocaml.ml PACKAGES hello_world-bytecode)
 add_ocaml_c_object(libhelloworld-bytecode BYTECODE SOURCES hellowrap-c.c hello.h PACKAGES hello_world-bytecode hello_world_wrap-bytecode ${so_flags_bytecode})
 
-add_executable(main-libhelloworld-bytecode main.c)
-target_compile_definitions(main-libhelloworld-bytecode PRIVATE HELLO_LIBRARIES_EXPORTS)
-target_link_libraries(main-libhelloworld-bytecode libhelloworld-bytecode)
+# add_executable(main-libhelloworld-bytecode main.c)
+# target_compile_definitions(main-libhelloworld-bytecode PRIVATE HELLO_LIBRARIES_EXPORTS)
+# target_link_libraries(main-libhelloworld-bytecode libhelloworld-bytecode)
 
 
 enable_testing()
@@ -91,9 +91,9 @@ add_test(main2-native ${TARGET_SYSTEM_EMULATOR} main2-native${CMAKE_EXECUTABLE_S
 set_tests_properties(main2-native PROPERTIES PASS_REGULAR_EXPRESSION "^Hello world\n$")
 add_test(main-bytecode ${TARGET_SYSTEM_EMULATOR} main-bytecode${CMAKE_EXECUTABLE_SUFFIX})
 set_tests_properties(main-bytecode PROPERTIES PASS_REGULAR_EXPRESSION "^Hello world\n$")
-add_test(main-libhelloworld-bytecode ${TARGET_SYSTEM_EMULATOR} main-libhelloworld-bytecode${CMAKE_EXECUTABLE_SUFFIX})
-set_tests_properties(main-libhelloworld-bytecode PROPERTIES PASS_REGULAR_EXPRESSION "^Hello world\n$")
-add_test(main-libhelloworld ${TARGET_SYSTEM_EMULATOR} main-libhelloworld${CMAKE_EXECUTABLE_SUFFIX})
-set_tests_properties(main-libhelloworld PROPERTIES PASS_REGULAR_EXPRESSION "^Hello world\n$")
+# add_test(main-libhelloworld-bytecode ${TARGET_SYSTEM_EMULATOR} main-libhelloworld-bytecode${CMAKE_EXECUTABLE_SUFFIX})
+# set_tests_properties(main-libhelloworld-bytecode PROPERTIES PASS_REGULAR_EXPRESSION "^Hello world\n$")
+# add_test(main-libhelloworld ${TARGET_SYSTEM_EMULATOR} main-libhelloworld${CMAKE_EXECUTABLE_SUFFIX})
+# set_tests_properties(main-libhelloworld PROPERTIES PASS_REGULAR_EXPRESSION "^Hello world\n$")
 add_test(main-native ${TARGET_SYSTEM_EMULATOR} main-native${CMAKE_EXECUTABLE_SUFFIX})
 set_tests_properties(main-native PROPERTIES PASS_REGULAR_EXPRESSION "^Hello world\n$")
