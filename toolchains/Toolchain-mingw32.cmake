@@ -57,6 +57,7 @@ if(EXISTS /usr/i686-w64-mingw32)
     # First look in standard location as used by recent Debian/Ubuntu/etc.
     set(CMAKE_C_COMPILER i686-w64-mingw32-gcc)
     set(CMAKE_CXX_COMPILER i686-w64-mingw32-g++)
+    set(CMAKE_DLLTOOL i686-w64-mingw32-dlltool)
     set(CMAKE_OCaml_COMPILER i686-w64-mingw32-ocamlc)
     set(CMAKE_OCaml_OPT_COMPILER i686-w64-mingw32-ocamlopt)
     set(CMAKE_OCaml_DEP i686-w64-mingw32-ocamldep)
@@ -66,6 +67,7 @@ elseif(EXISTS /usr/i586-mingw32msvc)
     # First look in standard location as used by old Debian/Ubuntu/etc.
     set(CMAKE_C_COMPILER i586-mingw32msvc-gcc)
     set(CMAKE_CXX_COMPILER i586-mingw32msvc-g++)
+    set(CMAKE_DLLTOOL i586-mingw32msvc-dlltool)
     set(CMAKE_FIND_ROOT_PATH /usr/i586-mingw32msvc)
 elseif(EXISTS /opt/mingw)
     # Otherwise you can get a MinGW environment using the script at
@@ -73,6 +75,7 @@ elseif(EXISTS /opt/mingw)
     # most of the dependencies for you.  This is a suitable location.
     set(CMAKE_C_COMPILER /opt/mingw/usr/bin/i686-pc-mingw32-gcc)
     set(CMAKE_CXX_COMPILER /opt/mingw/usr/bin/i686-pc-mingw32-g++)
+    set(CMAKE_DLLTOOL /opt/mingw/usr/bin/i686-pc-mingw32-dlltool)
     set(CMAKE_FIND_ROOT_PATH /opt/mingw/usr/i686-pc-mingw32)
 else()
     # Else fill in local path which the user will likely adjust.
@@ -80,6 +83,7 @@ else()
     # <http://www.libsdl.org/extras/win32/cross/>
     set(CMAKE_C_COMPILER /usr/local/cross-tools/bin/i386-mingw32-gcc)
     set(CMAKE_CXX_COMPILER /usr/local/cross-tools/bin/i386-mingw32-g++)
+    set(CMAKE_DLLTOOL /usr/local/cross-tools/bin/i386-mingw32-dlltool)
     set(CMAKE_FIND_ROOT_PATH /usr/local/cross-tools)
 endif()
 
