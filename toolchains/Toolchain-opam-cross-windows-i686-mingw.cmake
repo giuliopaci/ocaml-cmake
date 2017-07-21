@@ -57,6 +57,7 @@ if(EXISTS /usr/i686-w64-mingw32)
     # First look in standard location as used by recent Debian/Ubuntu/etc.
     set(CMAKE_C_COMPILER i686-w64-mingw32-gcc)
     set(CMAKE_CXX_COMPILER i686-w64-mingw32-g++)
+    set(CMAKE_DLLTOOL i686-w64-mingw32-dlltool)
     set(CMAKE_OCaml_COMPILER ocamlfind -toolchain windows ocamlc)
     set(CMAKE_OCaml_OPT_COMPILER ocamlfind -toolchain windows ocamlopt)
     set(CMAKE_OCaml_DEP ocamlfind -toolchain windows ocamldep)
@@ -66,6 +67,7 @@ else()
     # Else fill in local path which the user will likely adjust.
     set(CMAKE_C_COMPILER /usr/local/cross-tools/bin/i686-mingw32-gcc)
     set(CMAKE_CXX_COMPILER /usr/local/cross-tools/bin/i686-mingw32-g++)
+    set(CMAKE_DLLTOOL /usr/local/cross-tools/bin/i686-mingw32-dlltool)
     set(CMAKE_FIND_ROOT_PATH /usr/local/cross-tools)
 endif()
 
