@@ -134,6 +134,15 @@ if(NOT CMAKE_OCaml_CONFIG_ext_obj)
   endif()
 endif()
 
+if(${CMAKE_OCaml_CONFIG_os_type} MATCHES "[wW][iI][nN]32")
+  if(${CMAKE_OCaml_CONFIG_native_c_compiler} MATCHES "[gG][cC][cC]")
+    find_package(Dlltool REQUIRED)
+    if(NOT CMAKE_DLLTOOL)
+      message(FATAL_ERROR "Dlltool not found")
+    endif()
+  endif()
+endif()
+
 include (FindPackageHandleStandardArgs)
 
 find_package_handle_standard_args(OCaml "Could NOT find OCaml. Please specify CMAKE_OCaml_EXECUTABLE."
