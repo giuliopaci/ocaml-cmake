@@ -880,7 +880,14 @@ macro (target_link_ocaml_libraries target)
     set (libs     ${libraries})
   endif (${OCAML_${target}_KIND} STREQUAL "EXECUTABLE")
 
-  add_custom_command (OUTPUT ${location}
+  set(output ${location})
+  if ((${OCAML_${target}_KIND} STREQUAL "LIBRARY") AND OCAML_${target}_NATIVE)
+    list (APPEND output "${CMAKE_CURRENT_BINARY_DIR}/${target}${CMAKE_OCaml_CONFIG_ext_lib}")
+  endif()
+  if ((${OCAML_${target}_KIND} STREQUAL "C_OBJECT") AND (${CMAKE_OCaml_CONFIG_os_type} MATCHES "[wW][iI][nN]32"))
+    list (APPEND output "${CMAKE_CURRENT_BINARY_DIR}/${target}.def")
+  endif()
+  add_custom_command (OUTPUT ${output}
     COMMAND ${compiler} ${opt} -o ${target}${ext} ${libs} ${OCAML_${target}_OBJECTS}
     DEPENDS ${OCAML_${target}_OBJECTS} ${deps} ${intertarget_dependencies}
     COMMENT "${comment}"
