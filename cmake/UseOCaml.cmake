@@ -884,11 +884,19 @@ macro (target_link_ocaml_libraries target)
   if ((${OCAML_${target}_KIND} STREQUAL "LIBRARY") AND OCAML_${target}_NATIVE)
     list (APPEND output "${CMAKE_CURRENT_BINARY_DIR}/${target}${CMAKE_OCaml_CONFIG_ext_lib}")
   endif()
+  set(def_commands "")
   if ((${OCAML_${target}_KIND} STREQUAL "C_OBJECT") AND (${CMAKE_OCaml_CONFIG_os_type} MATCHES "[wW][iI][nN]32"))
     list (APPEND output "${CMAKE_CURRENT_BINARY_DIR}/${target}.def")
+    list (APPEND output "${CMAKE_CURRENT_BINARY_DIR}/${target}${CMAKE_IMPORT_LIBRARY_SUFFIX}")
+    if(${CMAKE_OCaml_CONFIG_ccomp_type} MATCHES "[mM][sS][vV][cC]")
+      list (APPEND def_commands COMMAND  lib /DEF:"${CMAKE_CURRENT_BINARY_DIR}/${target}.def" /OUT:"${CMAKE_CURRENT_BINARY_DIR}/${target}${CMAKE_IMPORT_LIBRARY_SUFFIX}")
+    else()
+      list (APPEND def_commands COMMAND  ${CMAKE_DLLTOOL} -d ${CMAKE_CURRENT_BINARY_DIR}/${target}.def -l "${CMAKE_CURRENT_BINARY_DIR}/${target}${CMAKE_IMPORT_LIBRARY_SUFFIX}")
+    endif()
   endif()
   add_custom_command (OUTPUT ${output}
     COMMAND ${compiler} ${opt} -o ${target}${ext} ${libs} ${OCAML_${target}_OBJECTS}
+    ${def_commands}
     DEPENDS ${OCAML_${target}_OBJECTS} ${deps} ${intertarget_dependencies}
     COMMENT "${comment}"
     )
