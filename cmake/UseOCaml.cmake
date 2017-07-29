@@ -473,7 +473,7 @@ macro (ocaml_add_c_object_target target source objectname)
 
   ocaml_get_packages_flags(${target} ${libext} include_flags package_flags intertarget_dependencies)
   if(OCAML_${target}_C_FLAGS)
-    ocaml_var_to_flags(${OCAML_${target}_C_FLAGS} -ccopt c_flags)
+    ocaml_var_to_flags("${OCAML_${target}_C_FLAGS}" -ccopt c_flags)
   endif()
 
   add_custom_command (OUTPUT ${output}
@@ -523,7 +523,7 @@ macro (ocaml_add_object_target target source hasintf objectname)
 
   ocaml_get_packages_flags(${target} ${libext} include_flags package_flags intertarget_dependencies)
   if(OCAML_${target}_C_FLAGS)
-    ocaml_var_to_flags(${OCAML_${target}_C_FLAGS} -ccopt c_flags)
+    ocaml_var_to_flags("${OCAML_${target}_C_FLAGS}" -ccopt c_flags)
   endif()
 
   if(${OCAML_${target}_KIND} STREQUAL "C_OBJECT")
@@ -580,7 +580,7 @@ macro (ocaml_add_interface_object_target target source)
 
   ocaml_get_packages_flags(${target} ${libext} include_flags package_flags intertarget_dependencies)
   if(OCAML_${target}_C_FLAGS)
-    ocaml_var_to_flags(${OCAML_${target}_C_FLAGS} -ccopt c_flags)
+    ocaml_var_to_flags("${OCAML_${target}_C_FLAGS}" -ccopt c_flags)
   endif()
 
   add_custom_command (OUTPUT ${output}
