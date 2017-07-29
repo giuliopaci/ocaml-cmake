@@ -473,8 +473,6 @@ macro (ocaml_add_c_object_target target source objectname)
   else (OCAML_${target}_NATIVE)
     set (libext ".cma")
     set (compiler      ${CMAKE_OCaml_CMD_COMPILER})
-    set (${objectname} ${OCAML_${target}_OUTPUT_DIR}/${source_name_we}${object_ext})
-    set (output        ${${objectname}})
   endif (OCAML_${target}_NATIVE)
 
   ocaml_get_packages_flags(${target} ${libext} include_flags package_flags intertarget_dependencies)
