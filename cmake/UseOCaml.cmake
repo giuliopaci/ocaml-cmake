@@ -881,17 +881,20 @@ macro (target_link_ocaml_libraries target)
   endif (${OCAML_${target}_KIND} STREQUAL "EXECUTABLE")
 
   set(output ${location})
+  set(implib "")
   if ((${OCAML_${target}_KIND} STREQUAL "LIBRARY") AND OCAML_${target}_NATIVE)
     list (APPEND output "${CMAKE_CURRENT_BINARY_DIR}/${target}${CMAKE_OCaml_CONFIG_ext_lib}")
   endif()
   set(def_commands "")
   if ((${OCAML_${target}_KIND} STREQUAL "C_OBJECT") AND (${CMAKE_OCaml_CONFIG_os_type} MATCHES "[wW][iI][nN]32"))
-    list (APPEND output "${CMAKE_CURRENT_BINARY_DIR}/${target}.def")
-    list (APPEND output "${CMAKE_CURRENT_BINARY_DIR}/${target}${CMAKE_IMPORT_LIBRARY_SUFFIX}")
+    set(implib "${CMAKE_CURRENT_BINARY_DIR}/${target}${CMAKE_IMPORT_LIBRARY_SUFFIX}")
+    set(deffile "${CMAKE_CURRENT_BINARY_DIR}/${target}.def")
+    list (APPEND output "${deffile}")
+    list (APPEND output "${implib}")
     if(${CMAKE_OCaml_CONFIG_ccomp_type} MATCHES "[mM][sS][vV][cC]")
-      list (APPEND def_commands COMMAND  lib /DEF:"${CMAKE_CURRENT_BINARY_DIR}/${target}.def" /OUT:"${CMAKE_CURRENT_BINARY_DIR}/${target}${CMAKE_IMPORT_LIBRARY_SUFFIX}")
+      list (APPEND def_commands COMMAND  lib /DEF:"${deffile}" /OUT:"${implib}")
     else()
-      list (APPEND def_commands COMMAND  ${CMAKE_DLLTOOL} -d ${CMAKE_CURRENT_BINARY_DIR}/${target}.def -l "${CMAKE_CURRENT_BINARY_DIR}/${target}${CMAKE_IMPORT_LIBRARY_SUFFIX}")
+      list (APPEND def_commands COMMAND  ${CMAKE_DLLTOOL} -d "${deffile}" -l "${implib}")
     endif()
   endif()
   add_custom_command (OUTPUT ${output}
@@ -910,7 +913,8 @@ macro (target_link_ocaml_libraries target)
   set_target_properties (ocaml.${target} PROPERTIES
     KIND                       ${OCAML_${target}_KIND}
     NATIVE                     ${OCAML_${target}_NATIVE}
-    LOCATION                   ${location}
+    LOCATION                   "${location}"
+    IMPLIB                     "${implib}"
     LINK_INTERFACE_LIBRARIES   "${libraries}"
     OUTPUT_NAME                ${target}${ext}
     OBJECT_DIRECTORY           ${OCAML_${target}_OUTPUT_DIR}
@@ -1011,8 +1015,10 @@ macro (add_ocaml_c_object target)
   target_link_ocaml_libraries (${target})
   # expose target as a C library as well
   get_property(location TARGET ocaml.${target} PROPERTY LOCATION)
-  add_library(${target} UNKNOWN IMPORTED)
+  get_property(implib TARGET ocaml.${target} PROPERTY IMPLIB)
+  add_library(${target} SHARED IMPORTED)
   set_property(TARGET ${target} PROPERTY IMPORTED_LOCATION ${location})
+  set_property(TARGET ${target} PROPERTY IMPORTED_IMPLIB ${implib})
   add_dependencies(${target} ocaml.${target})
 endmacro (add_ocaml_c_object)
 
