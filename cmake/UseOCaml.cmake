@@ -177,6 +177,42 @@ mark_as_advanced (
   CMAKE_OCaml_LINKER_FLAGS_RELWITHDEBINFO
   )
 
+
+### WORKAROUNDS flags definition - start
+
+# TODO: remove the following block that is probably better handled in UseOCaml.cmake
+set(CMAKE_OCaml_workaround_so_c_flags "")
+set(CMAKE_OCaml_workaround_so_link_flags "")
+set(CMAKE_OCaml_workaround_so_link_flags_bytecode "")
+# TODO: remove this line that is needed just to load ocaml libraries that contains registered callbacks
+list (APPEND CMAKE_OCaml_workaround_so_link_flags -linkall)
+if(${CMAKE_OCaml_CONFIG_os_type} MATCHES "[wW][iI][nN]32")
+  if(${CMAKE_OCaml_CONFIG_native_c_compiler} MATCHES "[gG][cC][cC]")
+    list (APPEND CMAKE_OCaml_workaround_so_link_flags -cclib "-link -static-libgcc")
+    if("${CMAKE_OCaml_CONFIG_bytecomp_c_libraries}" STREQUAL "")
+      list (APPEND CMAKE_OCaml_workaround_so_link_flags_bytecode -cclib "-lws2_32")
+    endif()
+  endif()
+elseif(${CMAKE_OCaml_CONFIG_system} MATCHES "[lL][iI][nN][uU][xX]")
+  if("${CMAKE_OCaml_CONFIG_architecture}" STREQUAL "amd64")
+    list (APPEND CMAKE_OCaml_workaround_so_c_flags -fPIC)
+    if(NOT ${CMAKE_OCaml_VERSION} VERSION_LESS "4.00")
+      list (APPEND CMAKE_OCaml_workaround_so_link_flags -runtime-variant _pic)
+    endif()
+  endif()
+elseif(${CMAKE_OCaml_CONFIG_system} MATCHES "[mM][aA][cC][oO][sS][xX]")
+  if("${CMAKE_OCaml_CONFIG_architecture}" STREQUAL "amd64")
+    list (APPEND CMAKE_OCaml_workaround_so_link_flags -cclib -dynamiclib)
+  endif()
+else()
+endif()
+MESSAGE("so_c_flags             (internal): ${CMAKE_OCaml_workaround_so_c_flags}")
+MESSAGE("so_link_flags          (internal): ${CMAKE_OCaml_workaround_so_link_flags}")
+MESSAGE("so_link_flags_bytecode (internal): ${CMAKE_OCaml_workaround_so_link_flags_bytecode}")
+
+### WORKAROUNDS flags definition - stop
+
+
 function (ocaml_parse_macro_arguments prefix arg_names)
   set (current_arg "FIRST_ARGS")
   set (${prefix}_${current_arg})
@@ -476,6 +512,10 @@ macro (ocaml_add_c_object_target target source objectname)
   endif (OCAML_${target}_NATIVE)
 
   ocaml_get_packages_flags(${target} ${libext} include_flags package_flags intertarget_dependencies)
+  if (${OCAML_${target}_KIND} STREQUAL "C_OBJECT")
+    list(APPEND OCAML_${target}_C_FLAGS ${CMAKE_OCaml_workaround_so_c_flags})
+  endif()
+    
   if(OCAML_${target}_C_FLAGS)
     ocaml_var_to_flags("${OCAML_${target}_C_FLAGS}" -ccopt c_flags)
   endif()
@@ -861,6 +901,9 @@ macro (target_link_ocaml_libraries target)
     set (ext      "${CMAKE_EXECUTABLE_SUFFIX}")
     set (location "${CMAKE_CURRENT_BINARY_DIR}/${target}${ext}")
     set (opt      ${opt} ${OCAML_${target}_LINK_FLAGS})
+    if (NOT OCAML_${target}_NATIVE)
+      set (opt ${opt} ${CMAKE_OCaml_workaround_so_link_flags_bytecode})
+    endif (NOT OCAML_${target}_NATIVE)
     set (libs     ${libraries})
     message(STATUS "${target} ${location}")
   elseif (${OCAML_${target}_KIND} STREQUAL "LIBRARY")
@@ -877,6 +920,14 @@ macro (target_link_ocaml_libraries target)
     set (ext      "${CMAKE_OCaml_CONFIG_ext_dll}")
     set (location "${CMAKE_CURRENT_BINARY_DIR}/${target}${ext}")
     set (opt ${opt} -output-obj ${OCAML_${target}_LINK_FLAGS})
+    if (NOT OCAML_${target}_NATIVE)
+      if(CMAKE_OCaml_workaround_so_link_flags_bytecode)
+        set (opt ${opt} ${CMAKE_OCaml_workaround_so_link_flags_bytecode})
+      endif()
+    endif (NOT OCAML_${target}_NATIVE)
+    if(CMAKE_OCaml_workaround_so_link_flags)
+        set (opt ${opt} ${CMAKE_OCaml_workaround_so_link_flags})
+    endif()
     set (libs     ${libraries})
   endif (${OCAML_${target}_KIND} STREQUAL "EXECUTABLE")
 
