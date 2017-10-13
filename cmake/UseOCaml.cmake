@@ -206,9 +206,9 @@ elseif(${CMAKE_OCaml_CONFIG_system} MATCHES "[mM][aA][cC][oO][sS][xX]")
   endif()
 else()
 endif()
-MESSAGE("so_c_flags             (internal): ${CMAKE_OCaml_workaround_so_c_flags}")
-MESSAGE("so_link_flags          (internal): ${CMAKE_OCaml_workaround_so_link_flags}")
-MESSAGE("so_link_flags_bytecode (internal): ${CMAKE_OCaml_workaround_so_link_flags_bytecode}")
+#MESSAGE("so_c_flags             (internal): ${CMAKE_OCaml_workaround_so_c_flags}")
+#MESSAGE("so_link_flags          (internal): ${CMAKE_OCaml_workaround_so_link_flags}")
+#MESSAGE("so_link_flags_bytecode (internal): ${CMAKE_OCaml_workaround_so_link_flags_bytecode}")
 
 ### WORKAROUNDS flags definition - stop
 
@@ -429,7 +429,7 @@ function (find_ocaml_package_in_targets target name outdep pkgincludedirs pkgfil
           get_target_property (object_directory  ocaml.${name} OBJECT_DIRECTORY)
 
           get_target_property (output_name  ocaml.${name} OUTPUT_NAME)
-          message("${location} ${output_name} ${object_directory}")
+          #message("${location} ${output_name} ${object_directory}")
           set(${outdep} ocaml.${name} PARENT_SCOPE)
           set(${pkgfiles} ${location} PARENT_SCOPE)
           set(${pkgincludedirs} ${object_directory} PARENT_SCOPE)
